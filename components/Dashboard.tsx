@@ -1,56 +1,100 @@
-import React from 'react';
-import { MOCK_APPROVALS } from '../constants';
-import { ApprovalStatus } from '../types';
+"use client"
 
-const StatCard: React.FC<{ title: string; value: number | string; description: string;}> = ({ title, value, description }) => (
-    <div className="bg-slate-800/50 border border-slate-700/80 rounded-lg p-5">
-        <h3 className="text-sm font-medium text-slate-400">{title}</h3>
-        <p className="text-3xl font-bold text-white mt-2">{value}</p>
-        <p className="text-xs text-slate-500 mt-1">{description}</p>
-    </div>
-);
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { FileText, Users, CheckSquare, TrendingUp, CreditCard } from "lucide-react"
 
-export const Dashboard: React.FC = () => {
+export function Dashboard() {
+  const stats = [
+    { title: "承認待ち申請", value: "12", icon: FileText, color: "text-blue-500" },
+    { title: "今月の申請数", value: "45", icon: FileText, color: "text-green-500" },
+    { title: "アクティブユーザー", value: "28", icon: Users, color: "text-purple-500" },
+    { title: "完了タスク", value: "156", icon: CheckSquare, color: "text-emerald-500" },
+    { title: "新規リード", value: "8", icon: TrendingUp, color: "text-orange-500" },
+    { title: "支払先", value: "644", icon: CreditCard, color: "text-cyan-500" },
+  ]
 
-    const stats = {
-        total: MOCK_APPROVALS.length,
-        pending: MOCK_APPROVALS.filter(a => a.status === ApprovalStatus.Submitted).length,
-        approved: MOCK_APPROVALS.filter(a => a.status === ApprovalStatus.Approved).length,
-        rejected: MOCK_APPROVALS.filter(a => a.status === ApprovalStatus.Rejected || a.status === ApprovalStatus.Returned).length,
-    }
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold text-white">ダッシュボード</h2>
+        <p className="text-slate-400">システム全体の概要と統計情報</p>
+      </div>
 
-    return (
-        <div>
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-slate-100">ダッシュボード</h1>
-                <p className="text-sm text-slate-400">上申システムの概要と状態を確認できます</p>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index} className="bg-slate-800 border-slate-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-slate-300">{stat.title}</CardTitle>
+              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{stat.value}</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="総申請数" value={stats.total} description="全期間" />
-                <StatCard title="承認待ち" value={stats.pending} description="要承認" />
-                <StatCard title="承認済み" value={stats.approved} description="完了済み" />
-                <StatCard title="却下/差戻" value={stats.rejected} description="要修正" />
-            </div>
-
-             <div className="mt-8 bg-slate-800/50 border border-slate-700/80 rounded-lg p-6">
-                <h2 className="text-lg font-bold text-white mb-4">システム状態</h2>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <span className="relative flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                        </span>
-                        <span className="text-green-400 font-semibold">正常</span>
-                    </div>
-                    <p className="text-slate-400 text-sm">HELLBUILD approval system is running.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white">最近の申請</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                { id: "No.00012", title: "出張費用申請", status: "承認待ち", date: "2024-01-15" },
+                { id: "No.00011", title: "研修参加申請", status: "承認済み", date: "2024-01-14" },
+                { id: "No.00010", title: "備品購入申請", status: "承認待ち", date: "2024-01-13" },
+              ].map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
+                  <div>
+                    <p className="text-white font-medium">{item.title}</p>
+                    <p className="text-slate-400 text-sm">
+                      {item.id} - {item.date}
+                    </p>
+                  </div>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      item.status === "承認済み" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
+                    }`}
+                  >
+                    {item.status}
+                  </span>
                 </div>
-                 <div className="text-xs text-slate-500 mt-4">
-                    <p>データベース: <span className="text-green-400">接続済み</span></p>
-                    <p>最終確認: {new Date().toLocaleString('ja-JP')}</p>
-                 </div>
+              ))}
             </div>
+          </CardContent>
+        </Card>
 
-        </div>
-    );
-};
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white">今週のタスク</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                { title: "システム仕様書の作成", progress: 75, dueDate: "1月20日" },
+                { title: "データベース設計レビュー", progress: 100, dueDate: "1月18日" },
+                { title: "ユーザーテスト実施", progress: 30, dueDate: "1月25日" },
+              ].map((task, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-white font-medium">{task.title}</p>
+                    <span className="text-slate-400 text-sm">{task.dueDate}</span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div
+                      className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${task.progress}%` }}
+                    />
+                  </div>
+                  <p className="text-slate-400 text-sm">{task.progress}% 完了</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

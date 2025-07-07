@@ -1,86 +1,168 @@
-import React, { useState, useMemo } from 'react';
-import { MOCK_OCR_DOCUMENTS } from '../constants';
-import { OcrDocument } from '../types';
-import { SearchIcon, PlusIcon } from './icons';
+"use client"
 
-const getStatusPillClass = (status: 'pending' | 'processing' | 'complete' | 'error') => {
-  switch (status) {
-    case 'pending': return 'bg-slate-500/20 text-slate-400 border border-slate-500/30';
-    case 'processing': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
-    case 'complete': return 'bg-green-500/20 text-green-400 border border-green-500/30';
-    case 'error': return 'bg-red-500/20 text-red-400 border border-red-500/30';
-    default: return 'bg-slate-600 text-slate-300';
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Search, Plus, FileImage, Download, Eye } from "lucide-react"
+
+export function OcrDocuments() {
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const documents = [
+    {
+      id: "1",
+      title: "請求書_202401_001",
+      pages: 2,
+      size: "A4",
+      status: "完了",
+      createdAt: "2024-01-15",
+      processedAt: "2024-01-15 10:30",
+    },
+    {
+      id: "2",
+      title: "契約書_サンプル社",
+      pages: 5,
+      size: "A4",
+      status: "処理中",
+      createdAt: "2024-01-14",
+      processedAt: "-",
+    },
+    {
+      id: "3",
+      title: "見積書_202401_003",
+      pages: 1,
+      size: "A4",
+      status: "完了",
+      createdAt: "2024-01-13",
+      processedAt: "2024-01-13 14:20",
+    },
+  ]
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "完了":
+        return "bg-green-500/20 text-green-400 border-green-500/30"
+      case "処理中":
+        return "bg-blue-500/20 text-blue-400 border-blue-500/30"
+      case "エラー":
+        return "bg-red-500/20 text-red-400 border-red-500/30"
+      default:
+        return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+    }
   }
-};
 
-export const OcrDocuments: React.FC = () => {
-    const [searchTerm, setSearchTerm] = useState('');
+  const filteredDocuments = documents.filter((doc) => doc.title.toLowerCase().includes(searchTerm.toLowerCase()))
 
-    const filteredDocuments = useMemo(() => {
-        return MOCK_OCR_DOCUMENTS.filter(doc =>
-            doc.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [searchTerm]);
-
-    return (
-        <div className="h-full flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-100">公文書OCR</h1>
-                    <p className="text-sm text-slate-400">PDFや画像からテキストを抽出・管理します</p>
-                </div>
-                 <button className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors shadow-md">
-                    <PlusIcon className="w-5 h-5"/>
-                    新規アップロード
-                </button>
-            </div>
-            
-            <div className="mb-4">
-                <div className="relative">
-                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                    <input
-                        type="text"
-                        placeholder="文書タイトルで検索..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full max-w-lg bg-slate-800/80 border border-slate-700 rounded-full pl-11 pr-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"
-                    />
-                </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto pr-2 bg-slate-950/50 rounded-lg border border-slate-800">
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-800/50 text-xs text-slate-400 uppercase tracking-wider sticky top-0">
-                        <tr>
-                            <th scope="col" className="px-6 py-3">文書タイトル</th>
-                            <th scope="col" className="px-6 py-3">ページ数</th>
-                            <th scope="col" className="px-6 py-3">用紙サイズ</th>
-                            <th scope="col" className="px-6 py-3">ステータス</th>
-                            <th scope="col" className="px-6 py-3">アップロード日</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800">
-                        {filteredDocuments.map(doc => (
-                            <tr key={doc.id} className="hover:bg-slate-800/50 transition-colors">
-                                <td className="px-6 py-4 font-medium text-white">{doc.title}</td>
-                                <td className="px-6 py-4 text-slate-300">{doc.page_count}</td>
-                                <td className="px-6 py-4 text-slate-300">{doc.paper_size}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${getStatusPillClass(doc.status)}`}>
-                                        {doc.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-slate-400">{new Date(doc.created_at).toLocaleDateString()}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                 {filteredDocuments.length === 0 && (
-                    <div className="text-center py-20">
-                        <p className="text-slate-500">該当する文書が見つかりません。</p>
-                    </div>
-                )}
-            </div>
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold text-white">OCR文書管理</h2>
+          <p className="text-slate-400">文書のOCR処理と内容抽出</p>
         </div>
-    );
-};
+        <Button className="bg-emerald-500 hover:bg-emerald-600">
+          <Plus className="mr-2 h-4 w-4" />
+          文書アップロード
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-slate-300">総文書数</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">89</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-slate-300">処理完了</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-400">76</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-slate-300">処理中</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-400">8</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-slate-300">今月の処理数</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-400">23</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="bg-slate-800 border-slate-700">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <FileImage className="h-5 w-5 text-slate-400" />
+              <CardTitle className="text-white">文書一覧</CardTitle>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+              <Input
+                placeholder="文書を検索..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-700 border-slate-600 text-white"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-700">
+                  <th className="text-left py-3 px-4 font-medium text-slate-300">文書名</th>
+                  <th className="text-left py-3 px-4 font-medium text-slate-300">ページ数</th>
+                  <th className="text-left py-3 px-4 font-medium text-slate-300">サイズ</th>
+                  <th className="text-left py-3 px-4 font-medium text-slate-300">ステータス</th>
+                  <th className="text-left py-3 px-4 font-medium text-slate-300">作成日</th>
+                  <th className="text-left py-3 px-4 font-medium text-slate-300">処理完了日</th>
+                  <th className="text-left py-3 px-4 font-medium text-slate-300">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredDocuments.map((doc) => (
+                  <tr key={doc.id} className="border-b border-slate-700 hover:bg-slate-700/50">
+                    <td className="py-3 px-4 text-white font-medium">{doc.title}</td>
+                    <td className="py-3 px-4 text-slate-300">{doc.pages}</td>
+                    <td className="py-3 px-4 text-slate-300">{doc.size}</td>
+                    <td className="py-3 px-4">
+                      <Badge className={getStatusColor(doc.status)}>{doc.status}</Badge>
+                    </td>
+                    <td className="py-3 px-4 text-slate-300">{doc.createdAt}</td>
+                    <td className="py-3 px-4 text-slate-300">{doc.processedAt}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex space-x-2">
+                        <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

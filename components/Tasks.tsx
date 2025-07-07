@@ -1,100 +1,199 @@
-import React, { useState, useMemo } from 'react';
-import { MOCK_TASKS, MOCK_USERS } from '../constants';
-import { Task } from '../types';
-import { SearchIcon, PlusIcon } from './icons';
+"use client"
 
-const userMap = new Map(MOCK_USERS.map(u => [u.id, u]));
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Search, Plus, Calendar, User, CheckSquare } from "lucide-react"
 
-const getStatusPillClass = (status: 'todo' | 'in_progress' | 'done') => {
-  switch (status) {
-    case 'todo': return 'bg-slate-500/20 text-slate-400 border border-slate-500/30';
-    case 'in_progress': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
-    case 'done': return 'bg-green-500/20 text-green-400 border border-green-500/30';
-    default: return 'bg-slate-600 text-slate-300';
+export function Tasks() {
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const tasks = [
+    {
+      id: "1",
+      title: "システム仕様書の作成",
+      assignee: "田中太郎",
+      status: "進行中",
+      priority: "高",
+      dueDate: "2024-01-20",
+      progress: 60,
+      project: "Webシステム開発",
+    },
+    {
+      id: "2",
+      title: "データベース設計レビュー",
+      assignee: "佐藤花子",
+      status: "完了",
+      priority: "中",
+      dueDate: "2024-01-18",
+      progress: 100,
+      project: "Webシステム開発",
+    },
+    {
+      id: "3",
+      title: "ユーザーテスト実施",
+      assignee: "鈴木一郎",
+      status: "未開始",
+      priority: "低",
+      dueDate: "2024-01-25",
+      progress: 0,
+      project: "モバイルアプリ開発",
+    },
+    {
+      id: "4",
+      title: "セキュリティ監査",
+      assignee: "山田次郎",
+      status: "進行中",
+      priority: "高",
+      dueDate: "2024-01-22",
+      progress: 30,
+      project: "インフラ整備",
+    },
+  ]
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "進行中":
+        return "bg-blue-500/20 text-blue-400 border-blue-500/30"
+      case "完了":
+        return "bg-green-500/20 text-green-400 border-green-500/30"
+      case "未開始":
+        return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+      default:
+        return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+    }
   }
-};
 
-const getPriorityPillClass = (priority: 'low' | 'medium' | 'high') => {
-  switch (priority) {
-    case 'low': return 'text-slate-400';
-    case 'medium': return 'text-yellow-400';
-    case 'high': return 'text-red-400 font-bold';
-    default: return 'text-slate-300';
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "高":
+        return "bg-red-500/20 text-red-400 border-red-500/30"
+      case "中":
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+      case "低":
+        return "bg-green-500/20 text-green-400 border-green-500/30"
+      default:
+        return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+    }
   }
-};
 
+  const filteredTasks = tasks.filter(
+    (task) =>
+      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.assignee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.project.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
-export const Tasks: React.FC = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredTasks = useMemo(() => {
-        return MOCK_TASKS.filter(task =>
-            task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            userMap.get(task.assignee_id)?.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [searchTerm]);
-
-    return (
-        <div className="h-full flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-100">タスク管理</h1>
-                    <p className="text-sm text-slate-400">個人のタスク、プロジェクトタスクを管理します</p>
-                </div>
-                 <button className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors shadow-md">
-                    <PlusIcon className="w-5 h-5"/>
-                    新規タスク作成
-                </button>
-            </div>
-            
-            <div className="mb-4">
-                <div className="relative">
-                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                    <input
-                        type="text"
-                        placeholder="タスク名、担当者名で検索..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full max-w-lg bg-slate-800/80 border border-slate-700 rounded-full pl-11 pr-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"
-                    />
-                </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto pr-2 bg-slate-950/50 rounded-lg border border-slate-800">
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-800/50 text-xs text-slate-400 uppercase tracking-wider sticky top-0">
-                        <tr>
-                            <th scope="col" className="px-6 py-3">タイトル</th>
-                            <th scope="col" className="px-6 py-3">担当者</th>
-                            <th scope="col" className="px-6 py-3">期限</th>
-                            <th scope="col" className="px-6 py-3">優先度</th>
-                            <th scope="col" className="px-6 py-3">進捗</th>
-                            <th scope="col" className="px-6 py-3">更新日</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800">
-                        {filteredTasks.map(task => (
-                            <tr key={task.id} className="hover:bg-slate-800/50 transition-colors">
-                                <td className="px-6 py-4 font-medium text-white">{task.title}</td>
-                                <td className="px-6 py-4 text-slate-300">{userMap.get(task.assignee_id)?.name}</td>
-                                <td className="px-6 py-4 text-slate-300">{task.due_date}</td>
-                                <td className={`px-6 py-4 capitalize ${getPriorityPillClass(task.priority)}`}>{task.priority}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${getStatusPillClass(task.status)}`}>
-                                        {task.status.replace('_', ' ')}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-slate-400">{new Date(task.updated_at).toLocaleDateString()}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                 {filteredTasks.length === 0 && (
-                    <div className="text-center py-20">
-                        <p className="text-slate-500">該当するタスクが見つかりません。</p>
-                    </div>
-                )}
-            </div>
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold text-white">タスク管理</h2>
+          <p className="text-slate-400">プロジェクトタスクの管理と進捗追跡</p>
         </div>
-    );
-};
+        <Button className="bg-emerald-500 hover:bg-emerald-600">
+          <Plus className="mr-2 h-4 w-4" />
+          新規タスク
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-slate-300">総タスク数</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">24</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-slate-300">進行中</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-400">8</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-slate-300">完了</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-400">14</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-slate-300">未開始</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-slate-400">2</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="bg-slate-800 border-slate-700">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <CheckSquare className="h-5 w-5 text-slate-400" />
+              <CardTitle className="text-white">タスク一覧</CardTitle>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+              <Input
+                placeholder="タスクを検索..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-700 border-slate-600 text-white"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {filteredTasks.map((task) => (
+              <div key={task.id} className="bg-slate-700/50 border border-slate-600 rounded-lg p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-white mb-1">{task.title}</h3>
+                    <p className="text-sm text-slate-400">{task.project}</p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Badge className={getStatusColor(task.status)}>{task.status}</Badge>
+                    <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 text-sm text-slate-400 mb-3">
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 mr-1" />
+                    {task.assignee}
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    {task.dueDate}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-300">進捗: {task.progress}%</span>
+                  </div>
+                  <div className="w-full bg-slate-600 rounded-full h-2">
+                    <div
+                      className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${task.progress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
